@@ -43,23 +43,21 @@
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
-      </div>
-
     </el-form>
   </div>
 </template>
 
 <script>
 import { validUsername } from '@/utils/validate'
+import { login } from '@/api/login'
+import { getToken, setToken } from '@/utils/auth'
+import { valid } from 'mockjs'
 
 export default {
   name: 'Login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+      if (value.length < 3) {
         callback(new Error('Please enter the correct user name'))
       } else {
         callback()
@@ -74,8 +72,8 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        username: '',
+        password: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -105,21 +103,48 @@ export default {
         this.$refs.password.focus()
       })
     },
+    
     handleLogin() {
+      var text = '{"userId":"'+this.loginForm.username+'","password":"'+this.loginForm.password+'"}'
+      var data = JSON.parse(text)
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
+          login(data).then(res => {
+            if (res.code == 0) {
+              setToken(res.token)
+              this.$message({
+                message: '登录成功',
+                type: 'success'
+              });
+              this.$router.push({ path: '/dashboard' });
+              this.loading = false
+            }
+            else {
+
+            }
           }).catch(() => {
-            this.loading = false
+            this.loading = false;
           })
-        } else {
-          console.log('error submit!!')
-          return false
+        }
+        else {
+          console.log("error")
         }
       })
+      // this.$refs.loginForm.validate(valid => {
+      //   if (valid) {
+      //     this.loading = true
+      //     this.$store.dispatch('user/login', this.loginForm).then(() => {
+      //       this.$router.push({ path: this.redirect || '/' })
+      //       this.loading = false
+      //     }).catch(() => {
+      //       this.loading = false
+      //     })
+      //   } else {
+      //     console.log('error submit!!')
+      //     return false
+      //   }
+      // })
     }
   }
 }
