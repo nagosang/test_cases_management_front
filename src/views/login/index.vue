@@ -52,6 +52,7 @@ import { validUsername } from '@/utils/validate'
 import { login } from '@/api/login'
 import { getToken, setToken } from '@/utils/auth'
 import { valid } from 'mockjs'
+import { get } from 'js-cookie'
 
 export default {
   name: 'Login',
@@ -110,41 +111,34 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          login(data).then(res => {
-            if (res.code == 0) {
-              setToken(res.token)
-              this.$message({
-                message: '登录成功',
-                type: 'success'
-              });
-              this.$router.push({ path: '/dashboard' });
-              this.loading = false
-            }
-            else {
+          // login(data).then(res => {
+          //   if (res.code == 0) {
+          //     setToken(res.token)
+          //     this.$message({
+          //       message: '登录成功',
+          //       type: 'success'
+          //     });
+          //     this.$router.push({ path: '/dashboard' });
+          //     this.loading = false
+          //   }
+          //   else {
 
-            }
+          //   }
+          // }).catch(() => {
+          //   this.loading = false;
+          // })
+          this.$store.dispatch('user/login', data).then(() => {
+            this.$router.push({ path: this.redirect || '/' })
+            this.loading = false
           }).catch(() => {
-            this.loading = false;
+            console.log("error")
+            this.loading = false
           })
         }
         else {
           console.log("error")
         }
       })
-      // this.$refs.loginForm.validate(valid => {
-      //   if (valid) {
-      //     this.loading = true
-      //     this.$store.dispatch('user/login', this.loginForm).then(() => {
-      //       this.$router.push({ path: this.redirect || '/' })
-      //       this.loading = false
-      //     }).catch(() => {
-      //       this.loading = false
-      //     })
-      //   } else {
-      //     console.log('error submit!!')
-      //     return false
-      //   }
-      // })
     }
   }
 }
