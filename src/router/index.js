@@ -56,12 +56,24 @@ export const constantRoutes = [
   },
 
   {
+    path: '/groupManage',
+    component: Layout,
+    redirect: '/groupManage',
+    children: [{
+      path: 'groupManage',
+      name: 'GroupManage',
+      component: () => import('@/views/groupManage/index'),
+      meta: { title: '测试组管理', icon: 'el-icon-s-help' }
+    }]
+  },
+
+  {
     path: '/projectManage',
     component: Layout,
     redirect: '/projectManage',
     children: [{
       path: 'projectManage',
-      name: 'projectManage',
+      name: 'ProjectManage',
       component: () => import('@/views/projectManage/index'),
       meta: { title: '项目管理', icon: 'el-icon-s-help' }
     }]

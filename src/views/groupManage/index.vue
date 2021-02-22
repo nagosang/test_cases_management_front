@@ -1,11 +1,11 @@
 <template>
   <div>
     <el-row>  
-      <el-col :span="5">
+      <el-col :span="12">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span>项目列表</span>
-            <el-button style="float: right; padding: 3px 0" type="text">添加项目</el-button>
+            <span>组列表</span>
+            <el-button style="float: right; padding: 3px 0" type="text">添加组</el-button>
           </div>
           <div class="text item" style="height:400px">
             <el-scrollbar class="scrollbar">
@@ -21,7 +21,7 @@
         </el-card>
       </el-col>
 
-      <el-col :span="19">
+      <el-col :span="12">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
             <span>组成员</span>
@@ -29,6 +29,9 @@
           </div>
           <div class="text item" style="height:400px">
             <el-scrollbar class="scrollbar">
+              <ul class="memberList">
+                <li v-for="i in memberList" :key="i.userId" class="memberListItem">{{ i.userName }}</li>
+              </ul>
             </el-scrollbar>
           </div>
         </el-card>
@@ -39,7 +42,8 @@
 
 <script>
 import { getGroupList } from '@/api/group'
-import { getProjectListByUser } from "@/api/project"
+import { getProjectListByGroup } from "@/api/project"
+import { getGroupMember } from '@/api/user'
 
 export default {
   data() {
@@ -55,7 +59,7 @@ export default {
   },
 
   created(){
-    getProjectListByUser().then(res => {
+    getGroupList().then(res => {
       if(res.code == 0){
         this.treeData = res.data
       }
@@ -67,7 +71,13 @@ export default {
 
   methods: {
     handleNodeClick(data) {
-        console.log(data)
+      if(data.GroupId != undefined){
+        getGroupMember(data.GroupId).then(res => {
+          if(res.code == 0){
+            this.memberList = res.data;
+          }
+        })
+      }
     },
 
     loadNode(node, resolve){
@@ -121,4 +131,14 @@ export default {
     overflow-x: hidden;
   }
 
+  .memberListItem{
+    display: flex;
+    align-items: center;
+    height: 50px;
+    width: 80%;
+    background: #e8f3fe;
+    margin: 10px;
+    color: #7dbcfc;
+    
+  }
 </style>

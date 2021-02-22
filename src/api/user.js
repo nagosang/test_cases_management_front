@@ -21,3 +21,10 @@ export function logout() {
     method: 'post'
   })
 }
+
+export function getGroupMember(groupId) {
+  return request({
+    url: '/getGroupMember?groupId=' + groupId,
+    method: 'get'
+  })
+}
