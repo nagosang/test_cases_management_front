@@ -1,10 +1,9 @@
 import request from '@/utils/request'
 
-export function login(data) {
+export function getNoGroupUser() {
   return request({
-    url: '/vue-admin-template/user/login',
-    method: 'post',
-    data
+    url: '/getNoGroupUser',
+    method: 'get',
   })
 }
 

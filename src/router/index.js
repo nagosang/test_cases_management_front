@@ -80,6 +80,18 @@ export const constantRoutes = [
   },
 
   {
+    path: '/testCaseManage',
+    component: Layout,
+    redirect: '/testCaseManage',
+    children: [{
+      path: 'testCaseManage',
+      name: 'TestCaseManage',
+      component: () => import('@/views/testCaseManage/index'),
+      meta: { title: '测试用例管理', icon: 'el-icon-s-help' }
+    }]
+  },
+
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',

@@ -7,7 +7,8 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    role: ''
   }
 }
 
@@ -25,6 +26,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROLE: (state, role) => {
+    state.role = role
   }
 }
 
@@ -38,6 +42,7 @@ const actions = {
         if(response.code == 0){
           commit('SET_TOKEN', response.token)
           commit('SET_NAME', userInfo.userId)
+          commit('SET_ROLE', response.role)
           commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
           setToken(response.token)
           resolve()
@@ -59,6 +64,7 @@ const actions = {
           return reject('认证失效，请重新登录！')
         }
 
+        commit('SET_ROLE', response.userInfo.role)
         commit('SET_NAME', response.userInfo.userId)
         commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
         resolve(response)

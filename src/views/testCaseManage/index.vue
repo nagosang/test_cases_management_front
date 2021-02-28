@@ -4,8 +4,8 @@
       <el-col :span="5">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span>项目列表</span>
-            <el-button style="float: right; padding: 3px 0" type="text">添加项目</el-button>
+            <span>用例列表</span>
+            <!-- <el-button style="float: right; padding: 3px 0" type="text">添加项目</el-button> -->
           </div>
           <div class="text item" style="height:400px">
             <el-scrollbar class="scrollbar">
@@ -112,6 +112,7 @@
 
 <script>
 import { getProjectListByUser } from "@/api/project"
+import { getTestCaseList } from "@/api/TestCase"
 import { getInterfaceList, getInterfaceInfo } from "@/api/interface"
 
 export default {
@@ -148,34 +149,33 @@ export default {
 
   methods: {
     handleNodeClick(data) {
-      // this.showInfo =true;
-      // console.log(data)
+      console.log(data)
       if(this.showInfo == false && data.leaf== true){
         this.showInfo = true;
       }
       if(data.leaf == true){
-        getInterfaceInfo(data.interfaceId).then(res => {
-          if(res.code == 0) {
-            this.interfaceForm = res.data;
-            this.paramData = res.data.paramData;
-          }
-          else {
-            this.$message({
-              message: res.message,
-              type: 'error'
-            });
-          }
-        })
+        // getInterfaceInfo(data.interfaceId).then(res => {
+        //   if(res.code == 0) {
+        //     this.interfaceForm = res.data;
+        //     this.paramData = res.data.paramData;
+        //   }
+        //   else {
+        //     this.$message({
+        //       message: res.message,
+        //       type: 'error'
+        //     });
+        //   }
+        // })
       }
     },
 
     loadNode(node, resolve){
       if(node.data.projectId != undefined) {
-        var interfaceId = 0;
-        if(node.data.interfaceId != undefined){
-          interfaceId = node.data.interfaceId;
+        var testCaseId = 0;
+        if(node.data.testCaseId != undefined){
+          testCaseId = node.data.testCaseId;
         }
-        getInterfaceList(node.data.projectId, interfaceId).then(res => {
+        getTestCaseList(node.data.projectId, testCaseId).then(res => {
           if (res.code == 0) {
             resolve(res.data)
           }
