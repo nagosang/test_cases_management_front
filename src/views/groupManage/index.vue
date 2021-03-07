@@ -8,7 +8,7 @@
             <el-button style="float: right; padding: 3px 0" type="text" @click="addGroupClick" v-show="isLeader">添加组</el-button>
           </div>
           <div class="text item" style="height:400px">
-            <el-scrollbar class="scrollbar">
+            <el-scrollbar class="scrollbar cardScrollbar">
               <el-tree
                 :data="treeData"
                 :props="defaultProps"
@@ -45,27 +45,31 @@
             <el-button style="float: right; padding: 3px 0" type="text" @click="addGroupMember" v-show="isLeader">添加组成员</el-button>
           </div>
           <div class="text item" style="height:400px">
-            <el-scrollbar class="scrollbar">
+            <el-scrollbar class="scrollbar cardScrollbar">
               <ul class="memberList">
                 <li v-for="i in memberList" :key="i.userId" class="memberListItem">
-                  <span>{{ i.userName }}</span>
+                  <span>{{ i.userName }}<el-tag type="success" v-show="isShowTag(i.role)">组长</el-tag></span>
                   <div>
                     <el-button
                       type="text"
-                      size="mini">
+                      size="mini"
+                      v-show="!isShowTag(i.role)"
+                      @click="clickToChangeLeader(i.belongGroupId, i.userId)">
                       任命组长
                     </el-button>
                     
                     <el-button
                       type="text"
                       size="mini"
-                      v-if="i.userId === name">
+                      v-if="i.userId === name"
+                      @click="clickToExitGroup(i.belongGroupId, i.userId)">
                       退出该组
                     </el-button>
                     <el-button
                       type="text"
                       size="mini"
-                      v-else-if="isLeader">
+                      v-else-if="isLeader && !isShowTag(i.role)"
+                      @click="clickToRemoveMember(i.belongGroupId, i.userId)">
                       移除该组员
                     </el-button>
                   </div>
@@ -129,7 +133,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getGroupList, createGroup, deleteGroup, groupAddMember } from '@/api/group'
+import { getGroupList, createGroup, deleteGroup, groupAddMember, groupChangeLeader, removeMember } from '@/api/group'
 import { getProjectListByGroup } from "@/api/project"
 import { getGroupMember, getNoGroupUser } from '@/api/user'
 
@@ -242,6 +246,12 @@ export default {
         this.showGroupName = data.label
         // console.log(data)
         this.addGroupMemberForm.groupId = data.GroupId
+      }
+    },
+
+    isShowTag(userRole) {
+      if(userRole.indexOf("3") != -1) {
+        return true;
       }
     },
 
@@ -401,7 +411,7 @@ export default {
                 message:'添加成功',
                 type: 'success'
               })
-              getGroupMember(data.GroupId).then(res => {
+              getGroupMember(this.addGroupMemberForm.groupId).then(res => {
                 if(res.code == 0){
                   this.memberList = res.data;
                 }
@@ -425,7 +435,109 @@ export default {
           return false;
         }
       });
-    }
+    },
+
+    clickToChangeLeader(groupId, newLeaderId) {
+      groupChangeLeader(groupId, newLeaderId).then(res => {
+        if(res.code == 0){
+          this.$message({
+            message:'组长变更成功',
+            type:'success'
+          })
+          getGroupMember(groupId).then(res => {
+          if(res.code == 0){
+            this.memberList = res.data;
+          }
+          else {
+            this.$message({
+              message: res.message,
+              type: 'error'
+            });
+          }
+        })
+        }
+      })
+    },
+
+    clickToExitGroup(groupId, memberId) {
+      this.$confirm('此操作将退出组, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        removeMember(groupId, memberId).then(res => {
+          if(res.code == 0) {
+            this.$message({
+              type: 'success',
+              message: '退出成功!'
+            })
+            getGroupMember(groupId).then(res => {
+              if(res.code == 0){
+                this.memberList = res.data;
+              }
+              else {
+                this.$message({
+                  message: res.message,
+                  type: 'error'
+                });
+              }
+            })
+          }
+          else {
+            this.$message({
+              type: 'error',
+              message: res.msg
+            });
+          }
+        })
+        
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });          
+      });
+    },
+
+    clickToRemoveMember(groupId, memberId) {
+      this.$confirm('此操作将移除改组员, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        removeMember(groupId, memberId).then(res => {
+          if(res.code == 0) {
+            this.$message({
+              type: 'success',
+              message: '移除成功!'
+            })
+            getGroupMember(groupId).then(res => {
+              if(res.code == 0){
+                this.memberList = res.data;
+              }
+              else {
+                this.$message({
+                  message: res.message,
+                  type: 'error'
+                });
+              }
+            })
+          }
+          else {
+            this.$message({
+              type: 'error',
+              message: res.msg
+            });
+          }
+        })
+        
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });          
+      });
+    } 
   }
 }
 </script>
@@ -457,7 +569,7 @@ export default {
     height: 100%;
   }
 
-  .el-scrollbar__wrap{
+  .cardScrollbar .el-scrollbar__wrap{
     overflow-x: hidden;
   }
 

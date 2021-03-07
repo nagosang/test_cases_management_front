@@ -28,3 +28,24 @@ export function groupAddMember(memberId, groupId) {
     method: 'get',
   })
 }
+
+export function groupChangeLeader(groupId, newLeaderId) {
+  return request({
+    url: '/groupChangeLeader?groupId='+groupId+'&newLeaderId='+newLeaderId,
+    method:'post'
+  })
+}
+
+export function removeMember(groupId, memberId) {
+  return request({
+    url: '/removeMember?groupId='+groupId+'&memberId='+memberId,
+    method: 'post'
+  })
+}
+
+export function getGroupListForChange(groupId) {
+  return request({
+    url: '/getGroupListForChange?groupId=' + groupId,
+    method: 'get'
+  })
+}

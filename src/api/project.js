@@ -13,3 +13,18 @@ export function getProjectListByUser() {
     method: 'get',
   })
 }
+
+export function getProjectInfo(projectId) {
+  return request({
+    url: '/getProjectInfo?projectId=' + projectId,
+    method: 'get'
+  })
+}
+
+export function updateProjecInfo(data) {
+  return request({
+    url: '/updateProjectInfo',
+    method: 'post',
+    data
+  })
+}
