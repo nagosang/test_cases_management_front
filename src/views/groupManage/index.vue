@@ -573,6 +573,10 @@ export default {
     overflow-x: hidden;
   }
 
+  .el-select-dropdown .el-scrollbar {
+    padding-bottom: 17px;
+  }
+
   .memberListItem{
     display: flex;
     align-items: center;
