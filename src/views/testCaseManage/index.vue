@@ -20,20 +20,20 @@
                     <span>
                       {{ node.label }}
                       <el-tag size="mini" v-if="node.data.testCaseType == 1 && node.data.leaf == true">正</el-tag>
-                      <el-tag size="mini" v-else-if="node.data.leaf == true" type="danger">反</el-tag>
+                      <el-tag size="mini" v-else-if="node.data.testCaseType == 0 && node.data.leaf == true" type="danger">反</el-tag>
                     </span>
                     <span v-show="node.label != '暂无内容'">
                       <el-button
                         v-show="node.isLeaf == false"
                         type="text"
                         size="mini"
-                        @click="">
+                        @click="handleAddTestCase(node)">
                         添加
                       </el-button>
                       <el-popconfirm
                         v-show="node.level>1"
                         title="确定要删除吗？"
-                        @onConfirm=""
+                        @onConfirm="confirmDeleteTestCase(node, data)"
                       >
                         <el-button
                           type="text"
@@ -61,7 +61,7 @@
             <el-button style="float: right; padding: 3px 0" type="text" @click="test()">button</el-button>
           </div>
           <div class="text item" style="height:400px">
-            <el-scrollbar class="scrollbar">
+            <el-scrollbar class="scrollbar" ref="testCaseInfoScrollbar" style="height: 400px">
               <el-form :inline="true" :model="currentTestCase">
                 <el-form-item label="用例创建人">
                   <span style="width: 120px">{{ currentTestCase.createUserName }}</span>
@@ -80,7 +80,7 @@
                 :data="stepList"
                 border
                 align="left"
-                row-key="stepNo"
+                row-key="id"
               >              
                 <el-table-column
                   label="用例步骤"
@@ -113,7 +113,8 @@
                   <template slot="header" slot-scope="scope">
                       <el-button 
                         size="small"
-                        type="success">
+                        type="success"
+                        @click="addStep()">
                         添加步骤
                       </el-button>
                   </template>
@@ -129,7 +130,7 @@
                       </el-button>
                       <el-popconfirm
                         title="确定要删除吗？"
-                        @onConfirm=""
+                        @onConfirm="deleteTestCaseStep(scope.$index, scope.row)"
                       >
                         <el-button
                           slot="reference"
@@ -164,12 +165,49 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <el-dialog
+      title=""
+      :visible.sync="addTestCaseDialogVisible"
+      width="30%"
+      >
+      <el-form ref="addTestCaseForm" :model="addTestCaseForm" label-width="80px">
+        <el-form-item label="类型">
+          <el-switch
+            v-model="addTestCaseForm.isTestCase"
+            active-color="#13ce66"
+            inactive-color="#409EFF"
+            active-text="测试用例"
+            inactive-text="用例分类">
+          </el-switch>
+        </el-form-item>
+        
+        <el-form-item label="名称" prop="">
+          <el-input v-model="addTestCaseForm.testCaseName"></el-input>
+        </el-form-item>
+
+        <el-form-item label="类型" v-show="addTestCaseForm.isTestCase">
+          <el-switch
+            v-model="addTestCaseForm.testCaseType"
+            active-color="#67C23A"
+            inactive-color="#F56C6C"
+            active-text="正例"
+            inactive-text="反例">
+          </el-switch>
+        </el-form-item>
+
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addTestCaseDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="confirmToAddTestCase()">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getProjectListByUser } from "@/api/project"
-import { getTestCaseList, getTestCaseInfo, pdateTestCaseStep, updateTestCaseStep } from "@/api/TestCase"
+import { getTestCaseList, getTestCaseInfo, updateTestCaseStep, createTestCaseStep, deleteTestCaseStep, changeTestCaseStep, createTestCase, deleteTestCase } from "@/api/TestCase"
 import Sortable from 'sortablejs'
 import draggable from 'vuedraggable'
 
@@ -197,9 +235,19 @@ export default {
         lastModifyUserName: '',
         lastModifyTime: ''
       },
+      hasNewLine: false,
       stepList:[],
       mySort: null,
-      canDrop: true
+      canDrop: true,
+
+      addTestCaseDialogVisible: false,
+      addTestCaseForm:{
+        projectId: '',
+        belong:'',
+        isTestCase: true,
+        testCaseName:'',
+        testCaseType: false,
+      }
     };
   },
 
@@ -220,13 +268,27 @@ export default {
         onEnd({ newIndex, oldIndex }) {// 修改data中的数组，
           const targetRow = self.stepList.splice(oldIndex, 1)[0]
           self.stepList.splice(newIndex, 0, targetRow)
+
+          for(var i = 0;i<self.stepList.length;i++) {
+            self.stepList[i].stepNo = i+1
+          }
+          self.toChangeTestCaseStep();
+        }
+      })
+    },
+
+    toChangeTestCaseStep(){
+      changeTestCaseStep(this.currentTestCase.projectId, this.stepList).then(res => {
+        if(res.code != 0){
+          this.$message({
+            message: res.message,
+            type: 'error'
+          })
         }
       })
     },
 
     test(){
-      var state = this.mySort.option("disabled"); // get
-      this.mySort.option("disabled", !state); // set
       console.log(this.stepList)
     },
 
@@ -257,6 +319,7 @@ export default {
         if(res.code==0) {
           this.currentTestCase = res.data.testCaseInfo;
           this.stepList = res.data.testCase;
+          this.hasNewLine = false
         }
         else{
           this.$message({
@@ -301,13 +364,40 @@ export default {
       this.stepList[index].isModify = false
       this.$set(this.stepList,index, this.stepList[index])
 
+      if(this.stepList[index].isNewLine!=undefined && this.stepList[index].isNewLine==true){
+        this.stepList.pop()
+        this.hasNewLine =false;
+      }
       this.mySort.option("disabled", false); // set
     },
 
     paramConfirmEdit(index, row) {
-      updateTestCaseStep(this.currentTestCase.projectId, row).then(res => {
+      if(this.stepList[index].modifyStepInfo==""){
+        this.$message({
+          message:'用例步骤不能为空',
+          type: 'warning'
+        })
+        return
+      }
+
+      if(this.stepList[index].isNewLine!=undefined && this.stepList[index].isNewLine==true){
+        this.stepList[index].stepNo= this.stepList.length
+        this.stepList[index].testCaseId = this.currentTestCase.id
+        createTestCaseStep(this.currentTestCase.projectId, row).then(res => {
+          if(res.code == 0) {
+            this.refreshTestCaseInfo(this.currentTestCase.id)
+
+            this.mySort.option("disabled", false); // set
+            this.$message({
+              message: '添加成功',
+              type: 'success'
+            })
+          }
+        })
+      }
+      else{
+        updateTestCaseStep(this.currentTestCase.projectId, row).then(res => {
         if(res.code == 0) {
-          console.log(this.currentTestCase)
           this.refreshTestCaseInfo(this.currentTestCase.id)
 
           this.mySort.option("disabled", false); // set
@@ -318,15 +408,138 @@ export default {
           })
         }
       })
+      }
     },
 
     paramHandleDelete(index, row) {
       console.log(index, row);
     },
 
-    addParam(){
-      console.log("addParam")
-    }
+    addStep(){
+      if(this.hasNewLine){
+        console.log('has newline')
+        return
+      }
+      this.hasNewLine = true;
+      let newLine = {}
+      newLine.isNewLine = true;
+      newLine.isModify = true;
+      newLine.modifyStepInfo = '';
+      newLine.modifyStepParam = '';
+      newLine.modifyExpect = '';
+
+      this.mySort.option("disabled", true); // set
+      this.stepList.push(newLine)
+      this.$nextTick(() => {
+        this.$refs['testCaseInfoScrollbar'].$refs['wrap'].scrollTop = this.$refs['testCaseInfoScrollbar'].$refs['wrap'].scrollHeight
+      })
+    },
+
+    deleteTestCaseStep(index, row) {
+      deleteTestCaseStep(row.id, this.currentTestCase.projectId).then(res => {
+        if(res.code == 0){
+          this.$message({
+            message: '删除成功',
+            type: 'success'
+          })
+          this.refreshTestCaseInfo(this.currentTestCase.id);
+        }
+        else {
+          this.$message({
+            message: res.message,
+            type: 'error'
+          })
+        }
+      })
+    },
+
+    handleAddTestCase(node) {
+      console.log(node)
+      this.addTestCaseForm.projectId = node.data.projectId
+      this.addTestCaseForm.testCaseName = ''
+      if(node.data.testCaseId != undefined){
+        this.addTestCaseForm.belong = node.data.testCaseId
+      }
+      else{
+        this.addTestCaseForm.belong = 0;
+      }
+      this.addTestCaseDialogVisible = true
+    },
+
+    confirmToAddTestCase(){
+      if(this.addTestCaseForm.testCaseName == ""){
+        this.$message({
+          message:'名称不得为空',
+          type:'warning'
+        })
+        return
+      }
+      createTestCase(this.addTestCaseForm, this.addTestCaseForm.projectId).then(res => {
+        if(res.code == 0){
+          this.refreshTestCaseList()
+          this.showInfo = false
+          this.addTestCaseDialogVisible =false
+          this.$message({
+            message: '添加成功',
+            type:'success'
+          })
+        }
+        else{
+          this.message({
+            message: res.message,
+            type:'error'
+          })
+        }
+      })
+    },
+
+    confirmDeleteTestCase(node, data){
+      if(node.isLeaf == false) {
+        this.$confirm('此操作将永久删除该分类及其下的所有内容, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          deleteTestCase(node.data.testCaseId, node.data.projectId).then(res => {
+            if(res.code == 0){
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+              this.refreshTestCaseList()
+            }
+            else{
+              this.$message({
+                type: 'error',
+                message: res.msg
+              })
+            }
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+      }
+      else {
+        deleteTestCase(node.data.testCaseId, node.data.projectId).then(res => {
+          if(res.code == 0){
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            });
+            this.refreshTestCaseList();
+          }
+          else{
+            this.$message({
+              type: 'error',
+              message: res.msg
+            })
+          }
+        })
+      }
+    },
   }
 }
 </script>

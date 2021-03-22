@@ -21,3 +21,41 @@ export function updateTestCaseStep(projectId, data) {
     data
   })
 }
+
+export function createTestCaseStep(projectId, data) {
+  return request({
+    url:'/createTestCaseStep?projectId=' + projectId,
+    method: 'post',
+    data
+  })
+}
+
+export function deleteTestCaseStep(testCaseStepId, projectId) {
+  return request({
+    url: '/deleteTestCaseStep?testCaseStepId=' + testCaseStepId + '&projectId=' + projectId,
+    method: 'get'
+  })
+}
+
+export function changeTestCaseStep(projectId, data) {
+  return request({
+    url: '/changeTestCaseStepNo?projectId=' + projectId,
+    method: 'post',
+    data
+  })
+}
+
+export function createTestCase(data) {
+  return request({
+    url: '/createTestCase',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteTestCase(testCaseId, projectId) {
+  return request({
+    url: '/deleteTestCase?testCaseId=' + testCaseId + '&projectId=' + projectId,
+    method: 'get'
+  })
+}
