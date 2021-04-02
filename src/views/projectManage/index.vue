@@ -123,96 +123,284 @@
                 </el-form-item>
 
                 <el-form-item label="参数列表">
-                  <el-table
-                  :data="paramData"
-                  stripe
-                  border
-                  height="300"
-                  style="width: 90%">
-                    <el-table-column
-                    type="index"
-                    width="50">
-                    </el-table-column>
+                  <el-tabs v-model="activeName" type="border-card">
+                    <el-tab-pane label="请求参数" name="requestParam">
+                      <el-table
+                      :data="paramData"
+                      stripe
+                      border
+                      height="300"
+                      style="width: 90%">
+                        <el-table-column
+                        type="index"
+                        width="50">
+                        </el-table-column>
 
-                    <el-table-column
-                    label="参数名"
-                    width="180">
-                      <template slot-scope="scope">
-                        <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterName" @input="change($event)"></el-input>
-                        <!-- <el-input v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterName" @input="change($event)"></el-input> -->
-                        <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterName"></input>
-                        <span v-else ="scope.row.isModify != 1">{{ scope.row.parameterName }}</span>
-                      </template>
-                    </el-table-column>
+                        <el-table-column
+                        label="参数名"
+                        width="180">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterName" @input="change($event)"></el-input>
+                            <!-- <el-input v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterName" @input="change($event)"></el-input> -->
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterName"></input>
+                            <span v-else ="scope.row.isModify != 1">{{ scope.row.parameterName }}</span>
+                          </template>
+                        </el-table-column>
 
-                    <el-table-column
-                    label="参数类型"
-                    width="180">
-                      <template slot-scope="scope">
-                        <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterType"></el-input>
-                        <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterType"></input>
-                        <span v-else>{{ scope.row.parameterType }}</span>
-                      </template>
-                    </el-table-column>
+                        <el-table-column
+                        label="参数类型"
+                        width="180">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterType"></el-input>
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterType"></input>
+                            <span v-else>{{ scope.row.parameterType }}</span>
+                          </template>
+                        </el-table-column>
 
-                    <el-table-column
-                    label="参数示例">
-                      <template slot-scope="scope">
-                        <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.example"></el-input>
-                        <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyExample"></input>
-                        <span v-else>{{ scope.row.example }}</span>
-                      </template>
-                    </el-table-column>
+                        <el-table-column
+                        label="参数示例">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.example"></el-input>
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyExample"></input>
+                            <span v-else>{{ scope.row.example }}</span>
+                          </template>
+                        </el-table-column>
 
-                    <el-table-column label="操作">
-                      <template slot="header" slot-scope="scope">
-                        <el-button
-                          size="mini"
-                          type="success"
-                          @click="addParam()">添加参数</el-button>
-                      </template>
-                      <template slot-scope="scope">
-                        <div v-if="scope.row.isNewLine == 1">
-                          <el-button
-                            size="mini"
-                            type="primary"
-                            @click="paramHandleAdd(scope.$index, scope.row)">保存</el-button>
-                          <el-button
-                            size="mini"
-                            type="danger"
-                            @click="paramHandleCancelAdd(scope.$index, scope.row)">取消</el-button>
-                        </div>
-                        <div v-else>
-                          <div v-if="scope.row.isModify == 1">
+                        <el-table-column label="操作">
+                          <template slot="header" slot-scope="scope">
                             <el-button
                               size="mini"
-                              type="primary"
-                              @click="paramHandleSaveModify(scope.$index, scope.row)">保存</el-button>
-                            <el-button
-                              size="mini"
-                              type="danger"
-                              @click="">取消</el-button>
-                          </div>
-                          <div v-else>
-                            <el-button
-                              size="mini"
-                              @click="paramHandleModify(scope.$index, scope.row)"
-                              style="margin-right: 10px">编辑</el-button>
-                              <el-popconfirm
-                                title="确定要删除吗？"
-                                @onConfirm="paramHandleDelete(scope.$index, scope.row)"
-                              >
+                              type="success"
+                              @click="addParam()">添加参数</el-button>
+                          </template>
+                          <template slot-scope="scope">
+                            <div v-if="scope.row.isNewLine == 1">
+                              <el-button
+                                size="mini"
+                                type="primary"
+                                @click="paramHandleAdd(scope.$index, scope.row)">保存</el-button>
+                              <el-button
+                                size="mini"
+                                type="danger"
+                                @click="paramHandleCancelAdd(scope.$index, scope.row)">取消</el-button>
+                            </div>
+                            <div v-else>
+                              <div v-if="scope.row.isModify == 1">
+                                <el-button
+                                  size="mini"
+                                  type="primary"
+                                  @click="paramHandleSaveModify(scope.$index, scope.row)">保存</el-button>
                                 <el-button
                                   size="mini"
                                   type="danger"
-                                  slot="reference">删除</el-button>
-                              </el-popconfirm>
-                          </div>
-                        </div>
-                      </template>
-                    </el-table-column>
-                      
-                  </el-table>
+                                  @click="paramHandleCancelModify(scope.$index, scope.row)">取消</el-button>
+                              </div>
+                              <div v-else>
+                                <el-button
+                                  size="mini"
+                                  @click="paramHandleModify(scope.$index, scope.row)"
+                                  style="margin-right: 10px">编辑</el-button>
+                                  <el-popconfirm
+                                    title="确定要删除吗？"
+                                    @onConfirm="paramHandleDelete(scope.$index, scope.row)"
+                                  >
+                                    <el-button
+                                      size="mini"
+                                      type="danger"
+                                      slot="reference">删除</el-button>
+                                  </el-popconfirm>
+                              </div>
+                            </div>
+                          </template>
+                        </el-table-column>
+                          
+                      </el-table>
+                    </el-tab-pane>
+                    
+                    <el-tab-pane label="请求头" name="requestHeader">
+                      <el-table
+                      :data="headerData"
+                      stripe
+                      border
+                      height="300"
+                      style="width: 90%">
+                        <el-table-column
+                        type="index"
+                        width="50">
+                        </el-table-column>
+
+                        <el-table-column
+                        label="参数名"
+                        width="180">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterName" @input="change($event)"></el-input>
+                            <!-- <el-input v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterName" @input="change($event)"></el-input> -->
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="scope.row.modifyParameterName"></input>
+                            <span v-else ="scope.row.isModify != 1">{{ scope.row.parameterName }}</span>
+                          </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        label="参数类型"
+                        width="180">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterType"></el-input>
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="scope.row.modifyParameterType"></input>
+                            <span v-else>{{ scope.row.parameterType }}</span>
+                          </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        label="参数示例">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.example"></el-input>
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="scope.row.modifyExample"></input>
+                            <span v-else>{{ scope.row.example }}</span>
+                          </template>
+                        </el-table-column>
+
+                        <el-table-column label="操作">
+                          <template slot="header" slot-scope="scope">
+                            <el-button
+                              size="mini"
+                              type="success"
+                              @click="addHeader()">添加参数</el-button>
+                          </template>
+                          <template slot-scope="scope">
+                            <div v-if="scope.row.isNewLine == 1">
+                              <el-button
+                                size="mini"
+                                type="primary"
+                                @click="paramHandleAdd(scope.$index, scope.row)">保存</el-button>
+                              <el-button
+                                size="mini"
+                                type="danger"
+                                @click="headerHandleCancelAdd(scope.$index, scope.row)">取消</el-button>
+                            </div>
+                            <div v-else>
+                              <div v-if="scope.row.isModify == 1">
+                                <el-button
+                                  size="mini"
+                                  type="primary"
+                                  @click="headerHandleSaveModify(scope.$index, scope.row)">保存</el-button>
+                                <el-button
+                                  size="mini"
+                                  type="danger"
+                                  @click="headerHandleCancelModify(scope.$index, scope.row)">取消</el-button>
+                              </div>
+                              <div v-else>
+                                <el-button
+                                  size="mini"
+                                  @click="headerHandleModify(scope.$index, scope.row)"
+                                  style="margin-right: 10px">编辑</el-button>
+                                  <el-popconfirm
+                                    title="确定要删除吗？"
+                                    @onConfirm="paramHandleDelete(scope.$index, scope.row)"
+                                  >
+                                    <el-button
+                                      size="mini"
+                                      type="danger"
+                                      slot="reference">删除</el-button>
+                                  </el-popconfirm>
+                              </div>
+                            </div>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </el-tab-pane>
+
+                    <el-tab-pane label="cookie" name="cookie">
+                      <el-table
+                      :data="cookieData"
+                      stripe
+                      border
+                      height="300"
+                      style="width: 90%">
+                        <el-table-column
+                        type="index"
+                        width="50">
+                        </el-table-column>
+
+                        <el-table-column
+                        label="参数名"
+                        width="180">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterName" @input="change($event)"></el-input>
+                            <!-- <el-input v-else-if="scope.row.isModify == 1" v-model="paramData[scope.$index].modifyParameterName" @input="change($event)"></el-input> -->
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="scope.row.modifyParameterName"></input>
+                            <span v-else ="scope.row.isModify != 1">{{ scope.row.parameterName }}</span>
+                          </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        label="参数类型"
+                        width="180">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.parameterType"></el-input>
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="scope.row.modifyParameterType"></input>
+                            <span v-else>{{ scope.row.parameterType }}</span>
+                          </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        label="参数示例">
+                          <template slot-scope="scope">
+                            <el-input v-if="scope.row.isNewLine == 1" v-model="scope.row.example"></el-input>
+                            <input class="my-input" v-else-if="scope.row.isModify == 1" v-model="scope.row.modifyExample"></input>
+                            <span v-else>{{ scope.row.example }}</span>
+                          </template>
+                        </el-table-column>
+
+                        <el-table-column label="操作">
+                          <template slot="header" slot-scope="scope">
+                            <el-button
+                              size="mini"
+                              type="success"
+                              @click="addCookie()">添加参数</el-button>
+                          </template>
+                          <template slot-scope="scope">
+                            <div v-if="scope.row.isNewLine == 1">
+                              <el-button
+                                size="mini"
+                                type="primary"
+                                @click="paramHandleAdd(scope.$index, scope.row)">保存</el-button>
+                              <el-button
+                                size="mini"
+                                type="danger"
+                                @click="cookieHandleCancelAdd(scope.$index, scope.row)">取消</el-button>
+                            </div>
+                            <div v-else>
+                              <div v-if="scope.row.isModify == 1">
+                                <el-button
+                                  size="mini"
+                                  type="primary"
+                                  @click="cookieHandleSaveModify(scope.$index, scope.row)">保存</el-button>
+                                <el-button
+                                  size="mini"
+                                  type="danger"
+                                  @click="cookieHandleCancelModify(scope.$index, scope.row)">取消</el-button>
+                              </div>
+                              <div v-else>
+                                <el-button
+                                  size="mini"
+                                  @click="cookieHandleModify(scope.$index, scope.row)"
+                                  style="margin-right: 10px">编辑</el-button>
+                                  <el-popconfirm
+                                    title="确定要删除吗？"
+                                    @onConfirm="paramHandleDelete(scope.$index, scope.row)"
+                                  >
+                                    <el-button
+                                      size="mini"
+                                      type="danger"
+                                      slot="reference">删除</el-button>
+                                  </el-popconfirm>
+                              </div>
+                            </div>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </el-tab-pane>
+                  </el-tabs>
                 </el-form-item>
               </el-form>
             </el-scrollbar>
@@ -423,8 +611,13 @@ export default {
         interfaceInfo:'',
         modifyInterfaceInfo: ''
       },
+      activeName: 'requestParam',
       paramData:[],
-      hasNewLine: false,
+      headerData:[],
+      cookieData:[],
+      hasNewParamter: false,
+      hasNewHeader: false,
+      hasNewCookie: false,
 
       addInterfaceDialogVisible: false,
       addInterfaceForm: {
@@ -491,12 +684,9 @@ export default {
           if(res.code == 0) {
             this.currentInterfaceId = data.interfaceId
             this.interfaceForm = res.data.data;
-            if(res.data.count != 0){
-              this.paramData = res.data.paramData;
-            }
-            else{
-              this.paramData = []
-            }
+            this.paramData = res.data.paramData
+            this.headerData = res.data.headerData
+            this.cookieData = res.data.cookieData
           }
           else {
             this.$message({
@@ -637,15 +827,29 @@ export default {
 
     paramHandleModify(index, row) {
       this.paramData[index].isModify = 1
-      console.log(this.paramData)
       row.modifyParameterName = row.parameterName
       row.modifyParameterType = row.parameterType
       row.modifyExample = row.example
       this.$set(this.paramData, index, this.paramData[index])
     },
 
+    headerHandleModify(index, row) {
+      this.headerData[index].isModify = 1
+      row.modifyParameterName = row.parameterName
+      row.modifyParameterType = row.parameterType
+      row.modifyExample = row.example
+      this.$set(this.headerData, index, this.headerData[index])
+    },
+
+    cookieHandleModify(index, row) {
+      this.cookieData[index].isModify = 1
+      row.modifyParameterName = row.parameterName
+      row.modifyParameterType = row.parameterType
+      row.modifyExample = row.example
+      this.$set(this.cookieData, index, this.cookieData[index])
+    },
+
     paramHandleSaveModify(index, row) {
-      console.log(this.paramData[index])
       if(this.paramData[index].modifyParameterName == ""){
         this.$message({
           message: '参数名不能为空',
@@ -661,7 +865,6 @@ export default {
         return
       }
       updateParameter(this.paramData[index], this.currentInterfaceId).then(res => {
-        console.log(res)
         if(res.code == 0) {
           this.$message({
             message: '修改成功',
@@ -670,12 +873,7 @@ export default {
           getInterfaceInfo(this.currentInterfaceId).then(res => {
             if(res.code == 0) {
               this.interfaceForm = res.data.data;
-              if(res.data.count != 0){
-                this.paramData = res.data.paramData;
-              }
-              else{
-                this.paramData = []
-              }
+              this.paramData = res.data.paramData
             }
             else {
               this.$message({
@@ -686,6 +884,95 @@ export default {
           })
         }
       })
+    },
+
+    headerHandleSaveModify(index, row) {
+      if(this.headerData[index].modifyParameterName == ""){
+        this.$message({
+          message: '参数名不能为空',
+          type: 'warning'
+        })
+        return
+      }
+      if(this.headerData[index].modifyParameterType == ""){
+        this.$message({
+          message: '参数类型不能为空',
+          type: 'warning'
+        })
+        return
+      }
+      updateParameter(this.headerData[index], this.currentInterfaceId).then(res => {
+        if(res.code == 0) {
+          this.$message({
+            message: '修改成功',
+            type: 'success'
+          })
+          getInterfaceInfo(this.currentInterfaceId).then(res => {
+            if(res.code == 0) {
+              this.interfaceForm = res.data.data;
+              this.headerData = res.data.headerData;
+            }
+            else {
+              this.$message({
+                message: res.message,
+                type: 'error'
+              });
+            }
+          })
+        }
+      })
+    },
+
+    cookieHandleSaveModify(index, row) {
+      if(this.cookieData[index].modifyParameterName == ""){
+        this.$message({
+          message: '参数名不能为空',
+          type: 'warning'
+        })
+        return
+      }
+      if(this.cookieData[index].modifyParameterType == ""){
+        this.$message({
+          message: '参数类型不能为空',
+          type: 'warning'
+        })
+        return
+      }
+      updateParameter(this.cookieData[index], this.currentInterfaceId).then(res => {
+        if(res.code == 0) {
+          this.$message({
+            message: '修改成功',
+            type: 'success'
+          })
+          getInterfaceInfo(this.currentInterfaceId).then(res => {
+            if(res.code == 0) {
+              this.interfaceForm = res.data.data;
+              this.cookieData = res.data.cookieData;
+            }
+            else {
+              this.$message({
+                message: res.message,
+                type: 'error'
+              });
+            }
+          })
+        }
+      })
+    },
+
+    paramHandleCancelModify(index, row){
+      this.paramData[index].isModify = 0
+      this.$set(this.paramData, index, this.paramData[index])
+    },
+
+    headerHandleCancelModify(index, row) {
+      this.headerData[index].isModify = 0
+      this.$set(this.headerData, index, this.headerData[index])
+    },
+
+    cookieHandleCancelModify(index ,row) {
+      this.cookieData[index].isModify = 0
+      this.$set(this.cookieData, index, this.cookieData[index])
     },
 
     paramHandleDelete(index, row) {
@@ -699,12 +986,9 @@ export default {
           getInterfaceInfo(this.currentInterfaceId).then(res => {
             if(res.code == 0) {
               this.interfaceForm = res.data.data;
-              if(res.data.count != 0){
-                this.paramData = res.data.paramData;
-              }
-              else{
-                this.paramData = []
-              }
+              this.paramData = res.data.paramData
+              this.headerData = res.data.headerData
+              this.cookieData = res.data.cookieData
             }
             else {
               this.$message({
@@ -718,23 +1002,69 @@ export default {
     },
 
     addParam(){
-      if(this.hasNewLine){
+      if(this.hasNewParamter){
         return
       }
-      this.hasNewLine = true;
+      this.hasNewParamter = true;
       let newLine = {}
       newLine.parameterName = ''
       newLine.parameterType = ''
       newLine.example = ''
       newLine.isNewLine = 1
+      newLine.type = 1
       this.paramData.push(newLine)
     },
 
+    addHeader(){
+      if(this.hasNewHeader){
+        return
+      }
+      this.hasNewHeader = true;
+      let newLine = {}
+      newLine.parameterName = ''
+      newLine.parameterType = ''
+      newLine.example = ''
+      newLine.isNewLine = 1
+      newLine.type = 2
+      this.headerData.push(newLine)
+    },
+
+    addCookie() {
+      if(this.hasNewCookie){
+        return
+      }
+      this.hasNewCookie = true;
+      let newLine = {}
+      newLine.parameterName = ''
+      newLine.parameterType = ''
+      newLine.example = ''
+      newLine.isNewLine = 1
+      newLine.type = 3
+      this.cookieData.push(newLine)
+    },
+
     paramHandleAdd(index, row) {
+      console.log(row)
+      if(row.parameterName == ""){
+        this.$message({
+          message: '参数名不能为空',
+          type: 'warning'
+        })
+        return
+      }
+      if(row.parameterType == ""){
+        this.$message({
+          message: '参数类型不能为空',
+          type: 'warning'
+        })
+        return
+      }
       addParameter(row, this.currentInterfaceId).then(res => {
         if(res.code == 0) {
           row.isNewLine = 0
-          this.hasNewLine = false
+          this.hasNewParamter = false
+          this.hasNewHeader =false
+          this.hasNewCookie = false
           this.$message({
             message: '添加成功',
             type: 'success'
@@ -743,12 +1073,9 @@ export default {
           getInterfaceInfo(this.currentInterfaceId).then(res => {
             if(res.code == 0) {
               this.interfaceForm = res.data.data;
-              if(res.data.count != 0){
-                this.paramData = res.data.paramData;
-              }
-              else{
-                this.paramData = []
-              }
+              this.paramData = res.data.paramData
+              this.headerData = res.data.headerData
+              this.cookieData = res.data.cookieData
             }
             else {
               this.$message({
@@ -769,7 +1096,17 @@ export default {
 
     paramHandleCancelAdd(index, row) {
       this.paramData.pop();
-      this.hasNewLine = false
+      this.hasNewParamter = false
+    },
+
+    headerHandleCancelAdd(index, row){
+      this.headerData.pop()
+      this.hasNewHeader =false
+    },
+
+    cookieHandleCancelAdd(index, row){
+      this.cookieData.pop()
+      this.hasNewCookie =false
     },
 
     handleClose(done) {
