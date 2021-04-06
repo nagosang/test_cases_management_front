@@ -44,6 +44,12 @@ export const constantRoutes = [
   },
 
   {
+    path: '/adminManage',
+    component: () => import('@/views/adminManage'),
+    hidden: true
+  },
+
+  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',
@@ -63,7 +69,7 @@ export const constantRoutes = [
       path: 'groupManage',
       name: 'GroupManage',
       component: () => import('@/views/groupManage/index'),
-      meta: { title: '测试组管理', icon: 'el-icon-s-help' }
+      meta: { title: '测试组管理', icon: 'el-icon-set-up' }
     }]
   },
 
@@ -75,7 +81,7 @@ export const constantRoutes = [
       path: 'projectManage',
       name: 'ProjectManage',
       component: () => import('@/views/projectManage/index'),
-      meta: { title: '项目管理', icon: 'el-icon-s-help' }
+      meta: { title: '项目管理', icon: 'el-icon-notebook-1' }
     }]
   },
 
@@ -87,7 +93,7 @@ export const constantRoutes = [
       path: 'testCaseManage',
       name: 'TestCaseManage',
       component: () => import('@/views/testCaseManage/index'),
-      meta: { title: '测试用例管理', icon: 'el-icon-s-help' }
+      meta: { title: '测试用例管理', icon: 'el-icon-receiving' }
     }]
   },
 

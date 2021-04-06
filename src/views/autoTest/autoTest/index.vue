@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div >
     <el-row>  
       <el-col :span="5">
         <el-card class="box-card">
@@ -31,7 +31,7 @@
           </div>
           <div class="text item" style="height:800px">
             <el-scrollbar class="scrollbar cardScrollbar">
-              <el-form ref="interfaceForm" :model="interfaceForm" label-width="80px" :rule="rules">
+              <el-form ref="interfaceForm" :model="interfaceForm" label-width="80px">
                 <el-form-item label="请求方法">
                   <el-tag v-if="interfaceForm.interfaceMethod == ''" type="info">无</el-tag>
                   <el-tag v-else-if="interfaceForm.interfaceMethod == 'get'">GET</el-tag>
@@ -185,7 +185,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button type="primary" @click="handleToAutoTest()">自动测试</el-button>
+                  <el-button type="primary" @click="handleToAutoTest()" v-loading.fullscreen.lock="fullscreenLoading">自动测试</el-button>
                 </el-form-item>
               </el-form>
             </el-scrollbar>
@@ -193,33 +193,55 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <el-dialog title="测试结果" :visible.sync="resultsDialogVisible">
+      <el-form :model="resaultsForm" label-width="80px">
+        <el-form-item label="响应码">
+          <span style="width: 120px">{{ resaultsForm.statusCode }}</span>
+        </el-form-item>
+        
+        <el-form-item label="响应码值">
+          <span style="width: 120px">{{ resaultsForm.statusCodeValue }}</span>
+        </el-form-item>
+
+        <el-form-item label="响应头">
+          <span style="width: 120px">{{ resaultsForm.headers }}</span>
+        </el-form-item>
+
+        <el-form-item label="返回值">
+          <div class="text item" style="height:400px">
+            <el-scrollbar class="scrollbar cardScrollbar">
+              <vue-json-pretty
+                :data="resaultsForm.body"
+              >   
+              </vue-json-pretty>
+            </el-scrollbar>
+          </div>
+        </el-form-item>
+
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="resultsDialogVisible = false">测试不通过</el-button>
+        <el-button type="primary" @click="handleConfirmTestResults()">测试通过</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import VueJsonPretty from 'vue-json-pretty'
+import 'vue-json-pretty/lib/styles.css'
 import { getProjectListByUser } from "@/api/project"
 import { getInterfaceList, getInterfaceInfo } from "@/api/interface"
+import { autoTest, confirmTestResults } from "@/api/autoTest"
 
 export default {
+  components: {
+    VueJsonPretty
+  },
+
   data() {
-    var validateInterfaceName  = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('不能为空！！！'));
-      }
-      else {
-        callback();
-      }
-    };
-
-    var validateProjectName = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('项目名称不能为空！！！'));
-      }
-      else {
-        callback();
-      }
-    }
-
     return {
       memberList:[],
       treeData: [],
@@ -229,12 +251,6 @@ export default {
         label: 'label',
         isLeaf: 'leaf'
       },
-
-      rules: {
-        interfaceName:  { validator: validateInterfaceName, trigger: 'blur' },
-        projectName: { validator: validateProjectName, trigger: 'blur'}
-      },
-
       modifyInterfaceDetail: false,
       currentInterfaceId: '',
       interfaceForm:{
@@ -249,11 +265,11 @@ export default {
       paramData:[],
       headerData:[],
       cookieData:[],
-      hasNewParamter: false,
-      hasNewHeader: false,
-      hasNewCookie: false,
 
-      groupOptions: []
+      fullscreenLoading: false,
+
+      resultsDialogVisible: false,
+      resaultsForm:[]
     };
   },
 
@@ -324,7 +340,28 @@ export default {
     },
 
     handleToAutoTest(){
+      this.fullscreenLoading = true;
+      var data = {};
+      data.paramData = this.paramData
+      data.headerData = this.headerData
+      data.cookieData = this.cookieData
+      autoTest(data, this.interfaceForm.interfaceMethod, this.currentInterfaceId).then(res => {
+        if(res.code == 0){
+          this.resaultsForm = res.data;
+          this.resaultsForm.body = JSON.parse(this.resaultsForm.body)
+        }
+      }).then(() => {
+        this.fullscreenLoading = false
+        this.resultsDialogVisible = true
+      })
+    },
 
+    handleConfirmTestResults() {
+      confirmTestResults(this.resaultsForm.id).then(res => {
+        if(res.code == 0){
+          this.resultsDialogVisible = false
+        }
+      })
     }
   }
 }
