@@ -35,7 +35,7 @@
               :data="tableData"
               stripe
               style="width: 100%"
-              height="650"
+              height="660"
             >
               <el-table-column type="expand">
                 <template slot-scope="scope">
@@ -189,6 +189,7 @@
                 width="150">
                 <template slot-scope="scope">
                   <el-tag v-if="scope.row.isPass == 1" type="success">测试通过</el-tag>
+                  <el-tag v-else-if="scope.row.isPass == 2">自动化测试</el-tag>
                   <el-tag v-else type="danger">测试不通过</el-tag>
                 </template>
               </el-table-column>

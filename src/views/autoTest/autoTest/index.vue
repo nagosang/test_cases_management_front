@@ -186,6 +186,7 @@
 
                 <el-form-item>
                   <el-button type="primary" @click="handleToAutoTest()" v-loading.fullscreen.lock="fullscreenLoading">自动测试</el-button>
+                  <el-button type="primary" @click="handleToAutoTestBtTimes()" v-loading.fullscreen.lock="fullscreenLoading">重复测试</el-button>
                 </el-form-item>
               </el-form>
             </el-scrollbar>
@@ -234,7 +235,7 @@ import VueJsonPretty from 'vue-json-pretty'
 import 'vue-json-pretty/lib/styles.css'
 import { getProjectListByUser } from "@/api/project"
 import { getInterfaceList, getInterfaceInfo } from "@/api/interface"
-import { autoTest, confirmTestResults } from "@/api/autoTest"
+import { autoTest, autoTestByTimes, confirmTestResults } from "@/api/autoTest"
 
 export default {
   components: {
@@ -353,6 +354,31 @@ export default {
       }).then(() => {
         this.fullscreenLoading = false
         this.resultsDialogVisible = true
+      })
+    },
+
+    handleToAutoTestBtTimes(){
+      this.fullscreenLoading = true;
+      var data = {};
+      data.paramData = this.paramData
+      data.headerData = this.headerData
+      data.cookieData = this.cookieData
+      autoTestByTimes(data, this.interfaceForm.interfaceMethod, this.currentInterfaceId).then(res => {
+        if(res.code == 0){
+          this.fullscreenLoading = false
+          this.$message({
+            message: "请求成功",
+            type: 'success'
+          })
+        }
+        else{
+          this.$message({
+            message: res.message,
+            type: 'error'
+          })
+        }
+      }).then(() => {
+        this.$router.push('/autoTest/testResult')
       })
     },
 

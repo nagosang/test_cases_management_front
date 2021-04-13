@@ -8,6 +8,14 @@ export function autoTest(data, method, interfaceId) {
   })
 }
 
+export function autoTestByTimes(data, method, interfaceId) {
+  return request({
+    url: '/autoTestByTimes?method=' + method + "&interfaceId=" + interfaceId,
+    method: 'post',
+    data
+  })
+}
+
 export function confirmTestResults(id) {
   return request({
     url: '/confirmTestResults?id='+id,

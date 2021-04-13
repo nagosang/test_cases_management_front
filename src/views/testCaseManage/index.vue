@@ -58,7 +58,6 @@
               <el-tag size="mini" v-if="currentTestCase.testCaseType == 1">正</el-tag>
               <el-tag size="mini" v-else type="danger">反</el-tag>
             </span>
-            <el-button style="float: right; padding: 3px 0" type="text" @click="test()">button</el-button>
           </div>
           <div class="text item" style="height:400px">
             <el-scrollbar class="scrollbar" ref="testCaseInfoScrollbar" style="height: 400px">
@@ -286,10 +285,6 @@ export default {
           })
         }
       })
-    },
-
-    test(){
-      console.log(this.stepList)
     },
 
     refreshTestCaseList() {
